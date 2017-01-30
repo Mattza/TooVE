@@ -1,8 +1,6 @@
 'use strict';
 const express = require('express');
-var exphbs = require('express-handlebars');
-const http = require('http');
-const parseXmlStr = require('xml2js').parseString
+const const parseXmlStr = require('xml2js').parseString
 function getDate(time) {
   let timeObj = {
     year: time.substr(0, 4),
@@ -12,12 +10,6 @@ function getDate(time) {
     minute: time.substr(10, 2)
   };
   return new Date(Date.UTC(timeObj.year, timeObj.month - 1, timeObj.day, timeObj.hour - 1, timeObj.minute));
-}
-
-function formatDate(date) {
-  let str = date.getHours();
-  str += ':' + ('0' + date.getMinutes()).slice(-2);
-  return str
 }
 
 function fetchData(option, resolve, reject) {
@@ -36,13 +28,13 @@ function fetchData(option, resolve, reject) {
           })
           resolve({ channel: data[0].$.channel, program: data.map(programMapper) });
         })
-
       } catch (e) {
         reject(e.message);
       }
     });
   })
 }
+
 function programMapper(program) {
   return {
     start: program.$.startDate.toTimeString().substr(0, 5),
@@ -50,7 +42,6 @@ function programMapper(program) {
     title: program.title[0]._,
     desc: program.desc && program.desc[0]._,
     category: program.category.map(item => item._)
-
   }
 }
 
