@@ -1,6 +1,6 @@
 'use strict';
 const express = require('express');
-const const parseXmlStr = require('xml2js').parseString
+const parseXmlStr = require('xml2js').parseString
 function getDate(time) {
   let timeObj = {
     year: time.substr(0, 4),
