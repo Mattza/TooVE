@@ -4,8 +4,8 @@ const http = require('http');
 const exphbs = require('express-handlebars');
 const parseXmlStr = require('xml2js').parseString
 
-const getDate = time => new Date(Date.UTC(
-  time.substr(0, 4), time.substr(4, 2) - 1, time.substr(6, 2), time.substr(8, 2), time.substr(10, 2)));
+const getDate = (time, addHour) => new Date(Date.UTC(
+  time.substr(0, 4), time.substr(4, 2) - 1, time.substr(6, 2), time.substr(8, 2) + (addHour ? 1 : 0), time.substr(10, 2)));
 const getUrl = (channel, date) => `http://xmltv.xmltv.se/${channel}_${date}.xml`;
 const programMapper = program => ({
   start: program.$.startDate.toTimeString().substr(0, 5),
@@ -31,8 +31,8 @@ function fetchData(option) {
       res.on('end', () => {
         parseXmlStr(rawData, (err, res) => {
           var data = res.tv.programme.filter((program) => {
-            program.$.stopDate = getDate(program.$.stop);
-            program.$.startDate = getDate(program.$.start);
+            program.$.stopDate = getDate(program.$.stop, true);
+            program.$.startDate = getDate(program.$.start, false);
             return program.$.stopDate > new Date();
           })
           resolve({ channel: option.display, program: data.map(programMapper) });
