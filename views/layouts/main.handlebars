@@ -4,15 +4,58 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <title>TooVe</title>
     <style>
+        body{
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+        }
         .wrapper{
             display:flex;
             flex-wrap: wrap;
         }
         .channel{
-            width:250px;
+            padding: 15px 30px;
+            width:300px;
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+            border-radius: 15px;
+            position:relative;
         }
+        .full-size{
+            position:absolute;
+            top:0;
+            left:0;
+            right:0;
+            bottom:0;
+        }
+        h3{
+            margin:0;
+        }
+        .hidden{
+            display:none;
+        }
+        input[type=checkbox] {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+
+        input[type=checkbox]:checked ~ div {
+            display:block;
+        }
+        .show,input[type=checkbox]:checked ~ .hide{
+            display:block;
+        }
+        .hide,input[type=checkbox]:checked ~ .show{
+            display:none;
+        }
+        label{
+            font-weight: bold;
+        }
+
+
     </style>
 </head>
 

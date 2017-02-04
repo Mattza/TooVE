@@ -1,12 +1,21 @@
 <div class="wrapper">
     {{#each data}}
     <div class="channel">
-        <h1>{{channel}}</h3>
-            {{#each program}}
-            <div class="program">
-                <p>{{start}} {{title}}
-            </div>
-            {{/each}}
+        <h3 for="collapse-{{channel}}">{{channel}}</h3>
+        <input id="collapse-{{channel}}" type="checkbox"> {{#each program}}
+        <div class="program {{#if_not_top3 @index}}hidden{{/if_not_top3}}">
+            <p>{{start}} {{title}}</p>
+        </div>
+        {{/each}}
+        <label for="collapse-{{channel}}" class="show">
+            Visa fler
+        </label>
+        <label for="collapse-{{channel}}" class="hide">
+            Dölj fler
+        </label>
+        <label for="collapse-{{channel}}" class="full-size">
+
+        </label>
     </div>
     {{/each}}
 </div>

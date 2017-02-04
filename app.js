@@ -3,20 +3,30 @@ const express = require('express');
 const http = require('http');
 const exphbs = require('express-handlebars');
 const parseXmlStr = require('xml2js').parseString
-function getDate(time) {
-  let timeObj = {
-    year: time.substr(0, 4),
-    month: time.substr(4, 2),
-    day: time.substr(6, 2),
-    hour: time.substr(8, 2),
-    minute: time.substr(10, 2)
-  };
-  return new Date(Date.UTC(timeObj.year, timeObj.month - 1, timeObj.day, timeObj.hour - 1, timeObj.minute));
-}
+
+const getDate = time => new Date(Date.UTC(
+  time.substr(0, 4), time.substr(4, 2) - 1, time.substr(6, 2), time.substr(8, 2), time.substr(10, 2)));
+const getUrl = (channel, date) => `http://xmltv.xmltv.se/${channel}_${date}.xml`;
+const programMapper = program => ({
+  start: program.$.startDate.toTimeString().substr(0, 5),
+  end: program.$.stopDate.toTimeString().substr(0, 5),
+  title: program.title[0]._,
+  desc: program.desc && program.desc[0]._,
+  category: program.category.map(item => item._)
+})
+
+let hbs = exphbs.create({
+  defaultLayout: 'main',
+  helpers: {
+    indexEach: (arr, start, stop, ctx) => arr
+      .slice(start || 0, stop || arr.length)
+      .reduce((acc, curr) => acc + ctx.fn(curr), ''),
+    if_not_top3: (index, opts) => index > 2 ? opts.fn() : ''
+  }
+});
 
 function fetchData(option, resolve, reject) {
   http.get(option, res => {
-    res.setEncoding('utf8');
     let rawData = '';
     res.on('data', (chunk) => rawData += chunk);
     res.on('error', reject)
@@ -37,36 +47,23 @@ function fetchData(option, resolve, reject) {
   })
 }
 
-function programMapper(program) {
-  return {
-    start: program.$.startDate.toTimeString().substr(0, 5),
-    end: program.$.stopDate.toTimeString().substr(0, 5),
-    title: program.title[0]._,
-    desc: program.desc && program.desc[0]._,
-    category: program.category.map(item => item._)
-  }
-}
-
-const getOption = (channel, date) => `http://xmltv.xmltv.se/${channel}_${date}.xml`;
 
 express()
-  .engine('handlebars', exphbs({ defaultLayout: 'main' }))
+  .engine('handlebars', hbs.engine)
   .set('view engine', 'handlebars')
+  .use(require('compression')({ level: 9 }))
   .use('/static', express.static('static'))
   .get('/', (req, res) => {
-    let options = [
-      getOption('svt1.svt.se', new Date().toISOString().split('T')[0]),
-      getOption('svt2.svt.se', new Date().toISOString().split('T')[0]),
-      getOption('tv4.se', new Date().toISOString().split('T')[0])
+    let date = new Date().toISOString().split('T')[0];
+    let channels = [
+      { display: 'SVT1', code: 'svt1.svt.se' },
+      { display: 'SVT2', code: 'svt2.svt.se' },
+      { display: 'TV4', code: 'tv4.se' }
     ];
-    var promises = options.map(option => {
-      return new Promise(function (resolve, reject) {
-        fetchData(option, resolve, reject);
-      })
-    });
-    Promise.all(promises).then(data => {
-      console.log(data)
-      res.render('home', { data });
-    })
+    let options = channels.map(channel => getUrl(channel.code, date));
+    Promise.all(
+      options.map(option => new Promise((res, rej) => fetchData(option, res, rej)))
+    ).then(data => res.render('home', { data }))
   })
   .listen(process.env.PORT || 8081);
+console.log('port 8081');
