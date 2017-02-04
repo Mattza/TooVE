@@ -12,38 +12,33 @@ const programMapper = program => ({
   end: program.$.stopDate.toTimeString().substr(0, 5),
   title: program.title[0]._,
   desc: program.desc && program.desc[0]._,
-  category: program.category.map(item => item._)
+  category: program.category && program.category.map(item => item._)
 })
 
 let hbs = exphbs.create({
   defaultLayout: 'main',
   helpers: {
-    indexEach: (arr, start, stop, ctx) => arr
-      .slice(start || 0, stop || arr.length)
-      .reduce((acc, curr) => acc + ctx.fn(curr), ''),
     if_not_top3: (index, opts) => index > 2 ? opts.fn() : ''
   }
 });
 
-function fetchData(option, resolve, reject) {
-  http.get(option, res => {
-    let rawData = '';
-    res.on('data', (chunk) => rawData += chunk);
-    res.on('error', reject)
-    res.on('end', () => {
-      try {
+function fetchData(option) {
+  return new Promise((resolve, reject) => {
+    http.get(option.url, res => {
+      let rawData = '';
+      res.on('data', (chunk) => rawData += chunk);
+      res.on('error', reject)
+      res.on('end', () => {
         parseXmlStr(rawData, (err, res) => {
           var data = res.tv.programme.filter((program) => {
             program.$.stopDate = getDate(program.$.stop);
             program.$.startDate = getDate(program.$.start);
             return program.$.stopDate > new Date();
           })
-          resolve({ channel: data[0].$.channel, program: data.map(programMapper) });
+          resolve({ channel: option.display, program: data.map(programMapper) });
         })
-      } catch (e) {
-        reject(e.message);
-      }
-    });
+      });
+    })
   })
 }
 
@@ -54,16 +49,27 @@ express()
   .use(require('compression')({ level: 9 }))
   .use('/static', express.static('static'))
   .get('/', (req, res) => {
-    let date = new Date().toISOString().split('T')[0];
+
+    let date = new Date();
+    let thisDay = '';
+    if (req.query.date && req.query.date !== date.toISOString().split('T')[0]) {
+      console.log(req.query.date);
+      date = new Date(req.query.date);
+      thisDay = date.getDate() + ' / ' + (date.getMonth() + 1);
+    }
+    let dateStr = date.toISOString().split('T')[0];
     let channels = [
       { display: 'SVT1', code: 'svt1.svt.se' },
       { display: 'SVT2', code: 'svt2.svt.se' },
       { display: 'TV4', code: 'tv4.se' }
     ];
-    let options = channels.map(channel => getUrl(channel.code, date));
-    Promise.all(
-      options.map(option => new Promise((res, rej) => fetchData(option, res, rej)))
-    ).then(data => res.render('home', { data }))
+    date.setDate(date.getDate() - 1)
+    let prevDay = date.toISOString().split('T')[0];
+    date.setDate(date.getDate() + 2)
+    let nextDay = date.toISOString().split('T')[0];
+    channels.forEach(channel => channel.url = getUrl(channel.code, dateStr));
+    Promise.all(channels.map(fetchData))
+      .then(data => res.render('home', { data, prevDay, nextDay, thisDay }))
   })
   .listen(process.env.PORT || 8081);
 console.log('port 8081');

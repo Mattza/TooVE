@@ -4,22 +4,22 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <title>TooVe</title>
     <style>
         body{
-            font-family: 'Roboto', sans-serif;
-            font-size: 16px;
+            font-family: 'open-sans', sans-serif;
+            font-size: 14px;
         }
         .wrapper{
             display:flex;
             flex-wrap: wrap;
+            justify-content: space-around;
         }
         .channel{
-            padding: 15px 30px;
+            padding: 15px 15px;
             width:300px;
             border: 1px solid #ccc;
-            margin-bottom: 15px;
+            margin-top: 15px;
             border-radius: 15px;
             position:relative;
         }
@@ -32,9 +32,14 @@
         }
         h3{
             margin:0;
+            text-align: center;
         }
-        .hidden{
-            display:none;
+        .hidden p{
+            height:0;
+            min-height:0;
+            margin:0;
+            overflow: hidden;
+            transition: 0.3s linear all;
         }
         input[type=checkbox] {
             position: absolute;
@@ -42,8 +47,10 @@
             left: -9999px;
         }
 
-        input[type=checkbox]:checked ~ div {
-            display:block;
+        input[type=checkbox]:checked ~ div p {
+            min-height:19px;
+            margin:16px 0;
+
         }
         .show,input[type=checkbox]:checked ~ .hide{
             display:block;
@@ -54,12 +61,57 @@
         label{
             font-weight: bold;
         }
+        body{
+            margin:0;
+        }
+        header{
+            background-color: #3F51B5;
+            color:white;
+            text-align:center;
+            padding:10px;
+
+        }
+         form{
+            display: flex;
+        }
+         form *{
+            flex:1;
+            text-align: center;
+        }
+        button{
+            border: none;
+    display: inline-block;
+    height: 36px;
+    line-height: 36px;
+    padding: 0 2rem;
+    text-transform: uppercase;
+    vertical-align: middle;
+    -webkit-tap-highlight-color: transparent;
+        outline: 0;
+        text-decoration: none;
+    color: #fff;
+    background-color: #26a69a;
+    text-align: center;
+    letter-spacing: .5px;
+    transition: .2s ease-out;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+
+        }
 
 
     </style>
 </head>
 
 <body>
+    <header>
+        <h2>TooVe {{thisDay}}</h2>
+    </header>
+    <form action="/" method="get">
+        <button name="date" value="{{prevDay}}">Föregående dag</button>
+        <button name="date" value="{{nextDay}}">Nästa dag</button>
+    </form>
     {{{body}}}
 </body>
 
