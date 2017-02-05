@@ -31,8 +31,8 @@ function fetchData(option) {
       res.on('end', () => {
         parseXmlStr(rawData, (err, res) => {
           var data = res.tv.programme.filter((program) => {
-            program.$.stopDate = getDate(program.$.stop, 1);
-            program.$.startDate = getDate(program.$.start, -1);
+            program.$.stopDate = getDate(program.$.stop, -1);
+            program.$.startDate = getDate(program.$.start, 0);
             return program.$.stopDate > new Date();
           })
           resolve({ channel: option.display, program: data.map(programMapper) });
