@@ -22,35 +22,35 @@ let hbs = exphbs.create({
   }
 });
 
-function fetchData(optionU) {
+function fetchData(optionU, filter) {
   return new Promise((resolve, reject) => {
-    let option = process.argv.some((arg) => arg === '--dev')?{
-      host: "proxyw.ppm.nu",
-      port: 8080,
-      path: optionU.url,
-      headers: {
-        host: "xmltv.xmltv.se"
-      }
-    }:optionU;
+    let option = process.argv.some((arg) => arg === '--dev') ? {
+          host: "proxyw.ppm.nu",
+          port: 8080,
+          path: optionU.url,
+          headers: {
+            host: "xmltv.xmltv.se"
+          }
+        } : optionU.url;
     http.get(option, res => {
       let rawData = '';
       res.on('data', (chunk) => rawData += chunk);
       res.on('error', reject);
       res.on('end', () => {
         parseXmlStr(rawData, (err, res) => {
-          const data = res.tv.programme.filter((program) => {
+          const data = res.tv.programme.filter(program => {
             program.$.stopDate = getDate(program.$.stop, -1);
             program.$.startDate = getDate(program.$.start, 0);
-            return program.$.stopDate > new Date();
+            return !filter || program.$.stopDate > new Date();
           });
           resolve({channel: option.display, program: data.map(programMapper)});
-        })
+        });
       });
     })
   })
 }
 
-let getData = (date) => {
+let getData = (date, filter) => {
   let dateStr = date.toISOString().split('T')[0];
   let channels = [
     {display: 'SVT1', code: 'svt1.svt.se'},
@@ -58,7 +58,7 @@ let getData = (date) => {
     {display: 'TV4', code: 'tv4.se'}
   ];
   channels.forEach(channel => channel.url = getUrl(channel.code, dateStr));
-  return Promise.all(channels.map(fetchData))
+  return Promise.all(channels.map((option) => fetchData(option, filter)))
 };
 
 express()
@@ -78,15 +78,16 @@ express()
       let prevDay = date.toISOString().split('T')[0];
       date.setDate(date.getDate() + 2);
       let nextDay = date.toISOString().split('T')[0];
-      getData(date).then(data => res.render('home', {data, prevDay, nextDay, thisDay}))
+      date.setDate(date.getDate() - 1);
+      getData(date, true).then(data => res.render('home', {data, prevDay, nextDay, thisDay}))
     })
-    .use('/csr',express.static('static'))
+    .use('/csr', express.static('static'))
     .get('/api', (req, res) => { //http://localhost:8082/api?date=2017-03-08
       let date = new Date();
       if (req.query.date && req.query.date !== date.toISOString().split('T')[0]) {
         date = new Date(req.query.date);
       }
-      getData(date).then(data => res.send(data))
+      getData(date, false).then(data => res.send(data))
     })
     .listen(process.env.PORT || 8082);
 console.log('port 8082');
