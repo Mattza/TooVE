@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm install",
     "poststart": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js --dev"
   },
   "author": "",
   "license": "ISC",

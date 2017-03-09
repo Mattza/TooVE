@@ -24,18 +24,18 @@ let hbs = exphbs.create({
 
 function fetchData(optionU) {
   return new Promise((resolve, reject) => {
-    var option = {
+    let option = process.argv.some((arg) => arg === '--dev')?{
       host: "proxyw.ppm.nu",
       port: 8080,
       path: optionU.url,
       headers: {
         host: "xmltv.xmltv.se"
       }
-    };
+    }:optionU;
     http.get(option, res => {
       let rawData = '';
       res.on('data', (chunk) => rawData += chunk);
-      res.on('error', reject)
+      res.on('error', reject);
       res.on('end', () => {
         parseXmlStr(rawData, (err, res) => {
           const data = res.tv.programme.filter((program) => {
@@ -80,9 +80,7 @@ express()
       let nextDay = date.toISOString().split('T')[0];
       getData(date).then(data => res.render('home', {data, prevDay, nextDay, thisDay}))
     })
-    .get('/csr', (req,res) => {
-      res.render('csr')
-    })
+    .use('/csr',express.static('static'))
     .get('/api', (req, res) => { //http://localhost:8082/api?date=2017-03-08
       let date = new Date();
       if (req.query.date && req.query.date !== date.toISOString().split('T')[0]) {
@@ -91,4 +89,4 @@ express()
       getData(date).then(data => res.send(data))
     })
     .listen(process.env.PORT || 8082);
-console.log('port 8081');
+console.log('port 8082');
