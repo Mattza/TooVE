@@ -6,85 +6,63 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>TooVe</title>
   <style>
-    body{
+    body {
       font-family: 'open-sans', sans-serif;
       font-size: 14px;
+      margin: 0;
     }
-    .wrapper{
-      display:flex;
+
+    header {
+      background-color: #3F51B5;
+      color: white;
+      text-align: center;
+      padding: 11px;
+    }
+
+    .wrapper {
+      display: flex;
       flex-wrap: wrap;
       justify-content: space-around;
     }
-    .channel{
+
+    .channel {
       padding: 3px 15px;
-      width:300px;
+      width: 300px;
       border: 1px solid #ccc;
       margin-top: 15px;
-      border-radius: 15px;
-      position:relative;
+      position: relative;
     }
-    .full-size{
-      position:absolute;
-      top:0;
-      left:0;
-      right:0;
-      bottom:0;
+    .channel .program.elapsed {
+      color:grey;
     }
-    h3{
-      margin:0;
+    h2, h3 {
+      margin: 0;
+      margin: 0;
+    }
+
+    h3 {
       text-align: center;
     }
-    .hidden p{
-      height:0;
-      min-height:0;
-      margin:0;
-      overflow: hidden;
-      transition: 0.3s linear all;
-    }
-    input[type=checkbox] {
-      position: absolute;
-      top: -9999px;
-      left: -9999px;
-    }
 
-    input[type=checkbox]:checked ~ div p {
-      min-height:19px;
-      margin: 8px 0;
-
-    }
-    .show,input[type=checkbox]:checked ~ .hide{
-      display:block;
-    }
-    .hide,input[type=checkbox]:checked ~ .show{
-      display:none;
-    }
-    label{
+    label {
       font-size: 0.7rem;
       text-align: center;
     }
-    body{
-      margin:0;
+
+    p {
+      margin: 8px 0;
     }
-    header{
-      background-color: #3F51B5;
-      color:white;
-      text-align:center;
-      padding:11px;
-    }
-    h2 {
-      margin:0;
-    }
-    p{
-      margin:8px 0;
-    }
-    form{
+
+    form {
       display: flex;
     }
-    form *{
-      flex:1;
+
+    form * {
+      flex: 1;
       text-align: center;
     }
-    button{
+
+    button {
       border: none;
       display: inline-block;
       height: 36px;
@@ -98,7 +76,7 @@
       color: #fff;
       background-color: #26a69a;
       text-align: center;
-      letter-spacing: .5px;
+      letter-spacing: 0.5px;
       transition: .2s ease-out;
       position: relative;
       cursor: pointer;
@@ -123,31 +101,30 @@
 </div>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.3/handlebars.min.js"></script>
+<script src="handlebars.min.js"></script>
 
 
 <script id="channel-template" type="text/x-handlebars-template">
   {{#each this}}
   <div class="channel">
     <h3 for="collapse-{{channel}}">{{channel}}</h3>
-    <input id="collapse-{{channel}}" type="checkbox"> {{#each program}}
+    {{#each program}}
+    {{#unless elapsed}}
     <div class="program">
-      <p>{{start}} {{title}}</p>
+      <p>{{startTime}} {{title}}</p>
     </div>
+    {{/unless}}
     {{/each}}
-    <label for="collapse-{{channel}}" class="show">
+    <button class="show">
       Visa fler
-    </label>
-    <label for="collapse-{{channel}}" class="hide">
+    </button>
+    <button class="hide">
       Dölj fler
-    </label>
-    <label for="collapse-{{channel}}" class="full-size">
-
-    </label>
+    </button>
   </div>
   {{/each}}
 </script>
-<script src="/static/main.js"></script>
+<script src="/main.js"></script>
 </body>
 
 </html>

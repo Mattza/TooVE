@@ -1,36 +1,60 @@
-console.log('hello world');
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js').then(function(registration) {
+      // Registration was successful
+      console.log('ServiceWorker registration successful with scope: ', registration.scope);
+    }).catch(function(err) {
+      // registration failed :(
+      console.log('ServiceWorker registration failed: ', err);
+    });
+  });
+}
+
+
 let isToday = true;
 
-const orchestrateResp = data => {
-  createHTML(data);
-  markProgram();
+const forEachProgram = (data, predicate) => {
+  data.forEach(channel => channel.program.forEach(predicate));
 };
 
-const createHTML = datas => {
-  document.querySelector('.wrapper')
-      .insertAdjacentHTML('beforeend', channelTemplate(datas));
+const preHandle = data => {
+  forEachProgram(data, program => {
+    program.startTime = program.start.split('T')[1].substr(0, 5);
+  })
 };
-const markProgram = () => {
+
+
+const naiveFetchAhead = () => {
+  let date = new Date();
+  for (let i = 0; i < 5; i++) {
+    date.setDate(date.getDate() + 1);
+    fetch(`/api?date=${date.toJSON().split('T')[0]}`)
+  }
+};
+const orchestrateResp = data => {
+  naiveFetchAhead();
+  preHandle(data);
+  markElapsed(data);
+  createHTML(data);
+
+};
+
+const createHTML = data => {
+  document.querySelector('.wrapper')
+      .insertAdjacentHTML('beforeend', channelTemplate(data));
+};
+const markElapsed = (data) => {
   if (isToday) {
-    document.querySelectorAll('.channel').forEach(channel => {
-      let progs = 0;
-      channel.querySelectorAll('.program').forEach(program => {
-        let [hour,minute] = program.children[0].innerText.split(' ')[0].split(':');
-        let now = new Date();
-        now.setHours(hour);
-        now.setMinutes(minute);
-        if(now<new Date()){
-          program.classList.add('elapsed')
+    data.forEach(channel => {
+      channel.program.forEach(program => {
+        if (new Date(program.end) < new Date()) {
+          program.elapsed = true;
         }
-        // console.log(time, channel)
       })
     });
   }
 };
 
-let taco = document.getElementById("channel-template");
-console.log('taco', taco);
+let channelTemplate = Handlebars.compile(document.getElementById("channel-template").innerHTML);
 
-let channelTemplate = Handlebars.compile(taco.innerHTML);
-
-fetch('/api').then(resp => resp.json()).then(data => orchestrateResp(data));
+fetch(`/api?date=${new Date().toJSON().split('T')[0]}`).then(resp => resp.json()).then(data => orchestrateResp(data));
