@@ -6,7 +6,7 @@ const parseXmlStr = require('xml2js').parseString;
 
 const getDate = (time, addHour) => new Date(Date.UTC(
     time.substr(0, 4), time.substr(4, 2) - 1, time.substr(6, 2), parseInt(time.substr(8, 2)) + addHour, time.substr(10, 2)));
-const getUrl = (channel, date) => `http://xmltv.xmltv.se/${channel}_${date}.xml`;
+const getUrl = (channel, date) => `http://xmltv.xmltv.se/${channel}_${date}.xml.gz`;
 const programMapper = program => ({
   start: program.$.startDate.toTimeString().substr(0, 5),
   end: program.$.stopDate.toTimeString().substr(0, 5),
